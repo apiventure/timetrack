@@ -4,233 +4,455 @@
     <meta charset="UTF-8">
     <title>Timesheet Automation Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-
         body {
-
-            background: url('image.png') no-repeat center fixed;
-
-            background-size: cover;
-
-            background-color: #cce5f6;
-
-            height: 100vh;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: center;
-
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
+          background: url('/images/dashboard-bg.png') no-repeat center center fixed;
+          background-size: cover;
+          background-color: #cce5f6;
+          margin: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .container {
-
-            max-width: 900px;
-
-            margin: auto;
-
+        .sidebar {
+          height: 100vh;
+          background-color: #1f4e75;
+          padding-top: 2rem;
+          color: white;
         }
-
-        .card {
-
-            margin-bottom: 2rem;
-
-            border-radius: 12px;
-
+        .sidebar a {
+          color: white;
+          text-decoration: none;
+          padding: .75rem 1rem;
+          display: block;
         }
-
+        .sidebar a:hover {
+          background-color: #17405f;
+        }
+        .content {
+          padding: 2rem;
+        }
         .card-header {
-
-            font-weight: bold;
-
-            background-color: #1f4e75;
-
-            color: white;
-
-            border-top-left-radius: 12px;
-
-            border-top-right-radius: 12px;
-
+          font-weight: bold;
+          background-color: #1f4e75;
+          color: white;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
-
-        .form-control:disabled {
-
-            background-color: #e9ecef;
-
-        }
-
         .day-header {
-
-            font-size: 0.85rem;
-
-            font-weight: normal;
-
-            color: #6c757d;
-
+          font-size: .85rem;
+          font-weight: normal;
+          color: #6c757d;
         }
-
-        .welcome-message {
-
-            position: absolute;
-
-            top: 10px;
-
-            left: 10px;
-
-            font-size: 1.2rem;
-
-            color: #1f4e75;
-
+        .alert-success {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
         }
+        .hour-input { width: 4rem; }
 
-        .logout-button {
-
-            position: absolute;
-
-            top: 10px;
-
-            right: 10px;
-
-        }
+        .pto-day {
+    background-color: #90cdf4 !important;
+    color: white;
+    border-radius: 50%;
+  }
+  /* Highlight holiday days */
+  .calendar-day {
+    background-color: #f56565 !important; /* e.g. red */
+    color: white;
+    border-radius: 50%;
+  }
     </style>
 </head>
 <body>
-<div class="welcome-message">
-
-    Welcome, <span th:text="${name}">User</span>
-</div>
-<div class="logout-button">
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="btn btn-danger">Logout</button>
-    </form>
-</div>
-<div class="container">
-    <h2 class="mb-4 text-center">Timesheet</h2>
-
-    <!-- Default Hours Setup -->
-    <div class="card">
-        <div class="card-header">Set Default Weekly Hours</div>
-        <div class="card-body">
-            <form id="defaultHoursForm">
-                <div class="table-responsive">
-                    <table class="table table-bordered text-center" id="defaultHoursTable">
-                        <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Monday</th>
-                            <th>Tuesday</th>
-                            <th>Wednesday</th>
-                            <th>Thursday</th>
-                            <th>Friday</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td><input type="text" name="project" class="form-control" value="Project A"></td>
-                            <td><input type="number" name="mon" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="tue" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="wed" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="thu" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="fri" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <button type="button" class="btn btn-secondary mb-2" onclick="addRow('defaultHoursTable')">Add Project</button>
-                <button type="submit" class="btn btn-primary">Save Default Hours</button>
-            </form>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar">
+            <h4 class="text-center">Menu</h4>
+            <a href="#defaultTab" onclick="showTab('defaultTab')">Default Time</a>
+            <a href="#submittedTab" onclick="showTab('submittedTab')">Previously Submitted</a>
+            <a href="#ptoTab" onclick="showTab('ptoTab')">PTOs & Holidays</a>
         </div>
-    </div>
 
-    <!-- Last Submitted Week Hours -->
-    <div class="card">
-        <div class="card-header">Last Submitted Week</div>
-        <div class="card-body">
-            <form id="lastSubmittedForm">
-                <div class="table-responsive">
-                    <table class="table table-bordered text-center" id="submittedHoursTable">
-                        <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Monday<br><span class="day-header">(2025-05-05)</span></th>
-                            <th>Tuesday<br><span class="day-header">(2025-05-06)</span></th>
-                            <th>Wednesday<br><span class="day-header">(2025-05-07)</span></th>
-                            <th>Thursday<br><span class="day-header">(2025-05-08)</span></th>
-                            <th>Friday<br><span class="day-header">(2025-05-09)</span></th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td><input type="text" name="project" class="form-control" value="Project A"></td>
-                            <td><input type="number" name="mon" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="tue" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="wed" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="thu" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><input type="number" name="fri" class="form-control hour-input" value="8" min="0" max="8"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
-                        </tr>
-                        </tbody>
-                    </table>
+        <!-- Main Content -->
+        <div class="col-md-10 content">
+            <h2 class="mb-4 text-center">Timesheet Automation</h2>
+
+            <!-- Success message -->
+            <div th:if="${success}"
+                 class="alert alert-success"
+                 th:text="${success}"></div>
+
+            <!-- ========== Default Time Tab ========== -->
+            <div id="defaultTab" class="tab-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span>Set Default Weekly Hours</span>
+                        <button id="editDefaultsBtn"
+                                class="btn btn-secondary btn-sm">
+                            Edit Default Hours
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Next Submission Date:</strong>
+                            <span th:text="${#temporals.format(nextFriday,'yyyy-MM-dd')}"></span>
+                        </p>
+                        <form th:action="@{/default-hours}"
+                              method="post"
+                              id="defaultHoursForm">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center" id="defaultHoursTable">
+                                    <thead>
+                                    <tr>
+                                        <th>Project</th><th>Monday</th><th>Tuesday</th>
+                                        <th>Wednesday</th><th>Thursday</th><th>Friday</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="entry : ${defaultHoursEntries}">
+                                        <td>
+                                            <input type="text" name="project"
+                                                   class="form-control"
+                                                   th:value="${entry.project}" disabled>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="mon"
+                                                   class="form-control hour-input"
+                                                   th:value="${entry.mon}"
+                                                   min="0" max="8" disabled>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="tue"
+                                                   class="form-control hour-input"
+                                                   th:value="${entry.tue}"
+                                                   min="0" max="8" disabled>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="wed"
+                                                   class="form-control hour-input"
+                                                   th:value="${entry.wed}"
+                                                   min="0" max="8" disabled>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="thu"
+                                                   class="form-control hour-input"
+                                                   th:value="${entry.thu}"
+                                                   min="0" max="8" disabled>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="fri"
+                                                   class="form-control hour-input"
+                                                   th:value="${entry.fri}"
+                                                   min="0" max="8" disabled>
+                                        </td>
+                                        <td>
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm remove-btn"
+                                                    onclick="removeRow(this)"
+                                                    style="display:none;">
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <th>Total</th>
+                                        <th><span id="totalMon">0</span></th>
+                                        <th><span id="totalTue">0</span></th>
+                                        <th><span id="totalWed">0</span></th>
+                                        <th><span id="totalThu">0</span></th>
+                                        <th><span id="totalFri">0</span></th>
+                                        <th></th>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <button type="button"
+                                    id="addProjectBtn"
+                                    class="btn btn-secondary mb-2"
+                                    onclick="addRow('defaultHoursTable')"
+                                    style="display:none;">
+                                Add Project
+                            </button>
+                            <button type="submit"
+                                    id="saveDefaultsBtn"
+                                    class="btn btn-primary"
+                                    style="display:none;">
+                                Save Default Hours
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-secondary mb-2" onclick="addRow('submittedHoursTable')">Add Project</button>
-                <button type="submit" class="btn btn-success">Resubmit</button>
-            </form>
+            </div>
+
+            <!-- ========== Previously Submitted Tab ========== -->
+            <div id="submittedTab" class="tab-section" style="display:none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span>Previously Submitted Hours</span>
+                        <button id="editSubmittedBtn"
+                                class="btn btn-secondary btn-sm">
+                            Edit Submitted Hours
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center">
+                                <thead>
+                                <tr>
+                                    <th>Weekly Close Date</th>
+                                    <th>Project</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Submitted By</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <!-- 1) Any real entries first -->
+                                <tr th:each="e: ${submittedEntries}">
+                                    <td th:text="${#temporals.format(e.weekCloseDate,'MM/dd/yyyy')}">06/20/2025</td>
+                                    <td>
+                                        <input type="text" name="project"
+                                               class="form-control"
+                                               th:value="${e.project}" disabled>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="mon"
+                                               class="form-control hour-input"
+                                               th:value="${e.mon}" disabled min="0" max="8">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="tue"
+                                               class="form-control hour-input"
+                                               th:value="${e.tue}" disabled min="0" max="8">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="wed"
+                                               class="form-control hour-input"
+                                               th:value="${e.wed}" disabled min="0" max="8">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="thu"
+                                               class="form-control hour-input"
+                                               th:value="${e.thu}" disabled min="0" max="8">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="fri"
+                                               class="form-control hour-input"
+                                               th:value="${e.fri}" disabled min="0" max="8">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="submittedBy"
+                                               class="form-control"
+                                               th:value="'SmartTimeTrack'" disabled>
+                                    </td>
+                                    <td>
+                                        <!-- per-row action (hidden until edit) -->
+                                        <a href="#" class="edit-row btn btn-link btn-sm"
+                                           style="display:none;">Save</a>
+                                        <a href="#" class="resubmit-row btn btn-link btn-sm">Resubmit</a>
+                                    </td>
+                                </tr>
+
+                                <!-- 2) Hard-coded sample week below -->
+                                <tr>
+                                    <td rowspan="2">06/20/2025</td>
+                                    <td><input type="text" class="form-control"
+                                               value="Project X" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="7" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="text" class="form-control"
+                                               value="SmartTimeTrack" disabled></td>
+                                    <td rowspan="2">
+                                        <a href="#" class="edit-static btn btn-link btn-sm"
+                                           style="display:none;">Save</a>
+                                        |
+                                        <a href="#"
+                                           class="resubmit-static btn btn-link btn-sm">
+                                            Resubmit
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" class="form-control"
+                                               value="Project Y" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="5" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="7" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><input type="text" class="form-control"
+                                               value="SmartTimeTrack" disabled></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== PTOs & Holidays Tab (empty for now) ========== -->
+            <div id="ptoTab" class="tab-section" style="display:none;">
+                <div class="card">
+                    <div class="card-header">PTO &amp; Holiday Calendars</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- PTO side -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header text-center">PTO Calendar</div>
+                                    <div class="card-body d-flex flex-column align-items-center">
+                                        <!-- flatpickr will both display inline AND populate this input -->
+                                        <input id="pto-calendar" class="form-control mb-3" placeholder="Select PTO dates" readonly>
+                                        <button type="button" class="btn btn-primary">Update PTO</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Holidays side -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header text-center">Holiday Calendar</div>
+                                    <div class="card-body d-flex flex-column align-items-center">
+                                        <input id="holiday-calendar" class="form-control mb-3" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ========== Demo Email Button ========== -->
+            <div class="mt-4 text-center">
+                <form th:action="@{/demo-submit}" method="post">
+                    <button type="submit" class="btn btn-info btn-lg">
+                        Send Demo Email
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // === Tab switching ===
+    function showTab(id) {
+      document.querySelectorAll('.tab-section')
+              .forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
 
-    // Limit to max 8 hours/day
+    // === Default-tab edit / totals ===
+    let defaultEdit = false;
+    document.getElementById('editDefaultsBtn')
+            .addEventListener('click', e => {
+      e.preventDefault();
+      defaultEdit = !defaultEdit;
+      document.querySelectorAll('#defaultTab input')
+              .forEach(i => i.disabled = !defaultEdit);
+      document.querySelectorAll('#defaultTab .remove-btn')
+              .forEach(b => b.style.display = defaultEdit ? 'inline-block' : 'none');
+      document.getElementById('addProjectBtn')
+              .style.display = defaultEdit ? 'inline-block' : 'none';
+      document.getElementById('saveDefaultsBtn')
+              .style.display = defaultEdit ? 'inline-block' : 'none';
+      document.getElementById('editDefaultsBtn')
+              .textContent = defaultEdit ? 'View Default Hours' : 'Edit Default Hours';
+      updateTotals();
+    });
+    function updateTotals() {
+      ['mon','tue','wed','thu','fri'].forEach(day => {
+        let sum = 0;
+        document.querySelectorAll(`#defaultTab input[name="${day}"]`)
+                .forEach(i => sum += parseInt(i.value)||0);
+        document.getElementById('total'+day.charAt(0).toUpperCase()+day.slice(1))
+                .textContent = sum;
+      });
+    }
+    document.getElementById('defaultHoursTable')
+            .addEventListener('input', e => {
+      if(e.target.classList.contains('hour-input')) {
+        if(+e.target.value>8) e.target.value=8;
+        updateTotals();
+      }
+    });
+    function addRow(tableId) {
+      const tbody = document.getElementById(tableId).querySelector('tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="form-control" name="project" /></td>
+        <td><input type="number" class="form-control hour-input" name="mon" value="0" min="0" max="8" /></td>
+        <td><input type="number" class="form-control hour-input" name="tue" value="0" min="0" max="8" /></td>
+        <td><input type="number" class="form-control hour-input" name="wed" value="0" min="0" max="8" /></td>
+        <td><input type="number" class="form-control hour-input" name="thu" value="0" min="0" max="8" /></td>
+        <td><input type="number" class="form-control hour-input" name="fri" value="0" min="0" max="8" /></td>
+        <td><button type="button" class="btn btn-danger btn-sm remove-btn" onclick="removeRow(this)">Remove</button></td>`;
+      tbody.appendChild(tr);
+    }
+    function removeRow(btn) {
+      btn.closest('tr').remove();
+      updateTotals();
+    }
 
-    document.addEventListener('input', function (e) {
-
-        if (e.target.classList.contains('hour-input')) {
-
-            const val = parseInt(e.target.value);
-
-            if (val > 8) e.target.value = 8;
-
-        }
-
+    // === Submitted-tab edit toggle ===
+    let submittedEdit = false;
+    document.getElementById('editSubmittedBtn')
+            .addEventListener('click', e => {
+      e.preventDefault();
+      submittedEdit = !submittedEdit;
+      document.querySelectorAll('#submittedTab input')
+              .forEach(i => i.disabled = !submittedEdit);
+      // show the per-row Save buttons only in edit mode
+      document.querySelectorAll('#submittedTab .edit-row, #submittedTab .edit-static')
+              .forEach(b => b.style.display = submittedEdit ? 'inline-block' : 'none');
+      document.getElementById('editSubmittedBtn')
+              .textContent = submittedEdit ? 'View Submitted Hours' : 'Edit Submitted Hours';
     });
 
-    function addRow(tableId) {
+    const ptoDates = ["2025-05-20", "2025-05-21", "2025-05-22"];
 
-        const table = document.getElementById(tableId).querySelector('tbody');
+    flatpickr("#pto-calendar", {
+      inline: true,
+      mode: "multiple",
+      onDayCreate: (dObj, dStr, fp, dayElem) => {
+        const iso = dayElem.dateObj.toISOString().slice(0,10);
+        if (ptoDates.includes(iso)) {
+          dayElem.classList.add("pto-day");
+        }
+      }
+    });
 
-        const newRow = document.createElement('tr');
+    // example holiday dates, replace with your data
+    const holidays = ["2025-05-23"];
 
-        newRow.innerHTML = `
-<td><input type="text" name="project" class="form-control"></td>
-<td><input type="number" name="mon" class="form-control hour-input" value="0" min="0" max="8"></td>
-<td><input type="number" name="tue" class="form-control hour-input" value="0" min="0" max="8"></td>
-<td><input type="number" name="wed" class="form-control hour-input" value="0" min="0" max="8"></td>
-<td><input type="number" name="thu" class="form-control hour-input" value="0" min="0" max="8"></td>
-<td><input type="number" name="fri" class="form-control hour-input" value="0" min="0" max="8"></td>
-<td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
-
-        `;
-
-        table.appendChild(newRow);
-
-    }
-
-    function removeRow(button) {
-
-        const row = button.closest('tr');
-
-        row.remove();
-
-    }
+    flatpickr("#holiday-calendar", {
+      inline: true,
+      onDayCreate: (dObj, dStr, fp, dayElem) => {
+        const iso = dayElem.dateObj.toISOString().slice(0,10);
+        if (holidays.includes(iso)) {
+          dayElem.classList.add("calendar-day");
+        }
+      }
+    });
 </script>
 </body>
 </html>

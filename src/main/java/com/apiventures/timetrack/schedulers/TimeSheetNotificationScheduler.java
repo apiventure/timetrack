@@ -13,13 +13,24 @@ public class TimeSheetNotificationScheduler {
     private com.apiventures.timetrack.service.EmailNotificationService emailService;
 
     // Every Wednesday, Thursday, and Friday at 9:00 AM
-    @Scheduled(cron = "0 23 13 * * WED,THU,FRI")
+    //@Scheduled(cron = "0 23 13 * * WED,THU,FRI")
     public void sendReminderEmail() {
         emailService.sendSimpleEmail(
                 "himaja2006@gmail.com",
                 "Timesheet Reminder",
                 "Please submit your timesheet by EOD Friday.\n"
                         + "If not submitted, it will be automatically submit the time using the default hours saved in TimeLedger."
+        );
+    }
+
+
+    //@Scheduled(cron = "0 23 13 * * WED,THU,FRI")
+    public void sendConfEmail() {
+        emailService.sendSimpleEmail(
+                "nalluriedison2@gmail.com",
+                "Default Timesheet Submitted",
+                "Dear User,\n"
+                        + "We know you're busy , so we took care of this weeks time sheet submission :) Enjoy your weekend !!"
         );
     }
 

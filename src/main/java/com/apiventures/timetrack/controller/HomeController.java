@@ -1,5 +1,6 @@
 package com.apiventures.timetrack.controller;
 
+import com.apiventures.timetrack.schedulers.TimeSheetNotificationScheduler;
 import com.apiventures.timetrack.service.OTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,13 +11,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class HomeController {
 
     @Autowired
     private OTPService otpService;
-    @GetMapping("/")
+
+    @Autowired
+    private TimeSheetNotificationScheduler timeSheetNotificationScheduler;
+
+    @GetMapping("/login")
     public String showLoginPage() {
         return "login"; // No .html extension needed
     }
@@ -44,8 +50,15 @@ public class HomeController {
         }
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "dashboard";
-    }
+//    @PostMapping("/demo-submit")
+//    public String demoSubmit(RedirectAttributes ra) {
+//        timeSheetNotificationScheduler.sendConfEmail();     // call your email method
+//        ra.addFlashAttribute("success", "Confirmation email sent!");
+//        return "redirect:/dashboard";   // back to dashboard
+//    }
+
+//    @GetMapping("/dashboard")
+//    public String dashboard() {
+//        return "dashboard";
+//    }
 }
