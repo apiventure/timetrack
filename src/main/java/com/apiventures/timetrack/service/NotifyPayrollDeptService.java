@@ -15,11 +15,11 @@ public class NotifyPayrollDeptService {
     final String excelFilePath = "src/main/resources/file/hqcentralpayrollrequestform.xlsx";
     @Autowired
     private com.apiventures.timetrack.service.EmailNotificationService emailService;
-    @Scheduled(cron = "0 24 15 * * WED,THU,FRI")
+    //@Scheduled(cron = "0 24 15 * * WED,THU,FRI")
     public void notifyPayrollDept() throws FileNotFoundException, IOException, MessagingException {
 
         emailService.sendEmailWithAttachment(
-                "himaja2006@gmail.com",
+                "nalluriedison2@gmail.com",
                 "Timesheet Updated",
                 "The employee has updated the timesheet. The revised hours are included in the attached Excel file.",
                 excelFilePath

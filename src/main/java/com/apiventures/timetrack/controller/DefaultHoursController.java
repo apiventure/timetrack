@@ -4,12 +4,15 @@ import com.apiventures.timetrack.entity.DefaultHours;
 import com.apiventures.timetrack.schedulers.TimeSheetNotificationScheduler;
 import com.apiventures.timetrack.service.DefaultHoursService;
 import com.apiventures.timetrack.service.EmailNotificationService;
+import com.apiventures.timetrack.service.NotifyPayrollDeptService;
 import com.apiventures.timetrack.service.SubmittedEntryService;
+import jakarta.mail.MessagingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -21,14 +24,16 @@ public class DefaultHoursController {
 
     private final DefaultHoursService defaultService;          // in‐memory list
     private final SubmittedEntryService submittedService;      // JPA/H2 history
-    private final TimeSheetNotificationScheduler emailService;       // sends email
+    private final TimeSheetNotificationScheduler emailService;
+    private final NotifyPayrollDeptService notifyPayrollDeptService;// sends email
 
     public DefaultHoursController(DefaultHoursService defaultService,
                                   SubmittedEntryService submittedService,
-                                  TimeSheetNotificationScheduler emailService) {
+                                  TimeSheetNotificationScheduler emailService, NotifyPayrollDeptService notifyPayrollDeptService) {
         this.defaultService   = defaultService;
         this.submittedService = submittedService;
         this.emailService     = emailService;
+        this.notifyPayrollDeptService = notifyPayrollDeptService;
     }
 
     @GetMapping({"/dashboard"})
@@ -92,5 +97,30 @@ public class DefaultHoursController {
 
         ra.addFlashAttribute("success", "Demo email sent and hours submitted!");
         return "redirect:/dashboard";
+    }
+
+    // Method to handle the POST request from the Resubmit form
+    @PostMapping("submitted/resubmit") // Matches the th:action="@{/submitted/resubmit}"
+    public String handleResubmit(RedirectAttributes redirectAttributes) {
+        try {
+            // Call the service method to send the email
+            notifyPayrollDeptService.notifyPayrollDept();
+
+            // Add a success message to be displayed after redirection
+            redirectAttributes.addFlashAttribute("success", "Payroll notification email sent successfully!");
+
+        } catch (FileNotFoundException e) {
+            // Handle file not found error
+            e.printStackTrace(); // Log the error
+            redirectAttributes.addFlashAttribute("error", "Error: Excel file for payroll not found.");
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Redirect back to the dashboard page to show the updated status/message
+        // Assuming your dashboard URL is /dashboard or /submitted/view
+        return "redirect:/dashboard"; // Or "redirect:/submitted/view" depending on your setup
     }
 }

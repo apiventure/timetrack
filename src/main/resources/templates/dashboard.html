@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
-          background: url('/images/dashboard-bg.png') no-repeat center center fixed;
+          background: url('static/image.png') no-repeat center center fixed;
           background-size: cover;
           background-color: #cce5f6;
           margin: 0;
@@ -64,6 +64,11 @@
     color: white;
     border-radius: 50%;
   }
+  .btn-resubmit {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: #fff;
+}
     </style>
 </head>
 <body>
@@ -218,8 +223,11 @@
                                 </thead>
                                 <tbody>
                                 <!-- 1) Any real entries first -->
-                                <tr th:each="e: ${submittedEntries}">
-                                    <td th:text="${#temporals.format(e.weekCloseDate,'MM/dd/yyyy')}">06/20/2025</td>
+                                <tr th:each="e, status : ${submittedEntries}">
+                                    <td th:if="${status.index == 0}"
+                                        th:text="${#temporals.format(e.weekCloseDate,'MM/dd/yyyy')}"
+                                        th:rowspan="${submittedEntries.size()}">06/20/2025</td>
+
                                     <td>
                                         <input type="text" name="project"
                                                class="form-control"
@@ -250,17 +258,20 @@
                                                class="form-control hour-input"
                                                th:value="${e.fri}" disabled min="0" max="8">
                                     </td>
-                                    <td>
-                                        <input type="text" name="submittedBy"
-                                               class="form-control"
-                                               th:value="'SmartTimeTrack'" disabled>
+
+                                    <td th:if="${status.index == 0}"
+                                        th:text="'SmartTimeTrack'"
+                                        th:rowspan="${submittedEntries.size()}"><strong>SmartTimeTrack</strong></td>
+
+                                    <td th:if="${status.index == 0}"
+                                        th:rowspan="${submittedEntries.size()}">
+                                        <form th:action="@{/submitted/resubmit}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-success">Resubmit</button>
+                                        </form>
                                     </td>
-                                    <td>
-                                        <!-- per-row action (hidden until edit) -->
-                                        <a href="#" class="edit-row btn btn-link btn-sm"
-                                           style="display:none;">Save</a>
-                                        <a href="#" class="resubmit-row btn btn-link btn-sm">Resubmit</a>
-                                    </td>
+                                </tr>
+                                <tr th:if="${submittedEntries.isEmpty()}">
+                                    <td colspan="9">No submitted hours found for this week.</td>
                                 </tr>
 
                                 <!-- 2) Hard-coded sample week below -->
@@ -278,16 +289,11 @@
                                                value="8" disabled></td>
                                     <td><input type="number" class="form-control hour-input"
                                                value="8" disabled></td>
-                                    <td><input type="text" class="form-control"
-                                               value="SmartTimeTrack" disabled></td>
+                                    <td><strong>User</strong></td>
                                     <td rowspan="2">
-                                        <a href="#" class="edit-static btn btn-link btn-sm"
-                                           style="display:none;">Save</a>
-                                        |
-                                        <a href="#"
-                                           class="resubmit-static btn btn-link btn-sm">
-                                            Resubmit
-                                        </a>
+                                        <form th:action="@{/submitted/resubmit}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-success">Resubmit</button>
+                                        </form>
                                     </td>
                                 </tr>
                                 <tr>
@@ -301,8 +307,9 @@
                                                value="7" disabled></td>
                                     <td><input type="number" class="form-control hour-input"
                                                value="8" disabled></td>
-                                    <td><input type="text" class="form-control"
-                                               value="SmartTimeTrack" disabled></td>
+                                    <td><input type="number" class="form-control hour-input"
+                                               value="8" disabled></td>
+                                    <td><strong>User</strong></td>
                                 </tr>
                                 </tbody>
                             </table>
