@@ -50,15 +50,5 @@ public class HomeController {
         }
     }
 
-//    @PostMapping("/demo-submit")
-//    public String demoSubmit(RedirectAttributes ra) {
-//        timeSheetNotificationScheduler.sendConfEmail();     // call your email method
-//        ra.addFlashAttribute("success", "Confirmation email sent!");
-//        return "redirect:/dashboard";   // back to dashboard
-//    }
 
-//    @GetMapping("/dashboard")
-//    public String dashboard() {
-//        return "dashboard";
-//    }
 }

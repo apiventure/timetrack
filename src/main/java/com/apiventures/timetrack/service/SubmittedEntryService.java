@@ -21,22 +21,17 @@ public class SubmittedEntryService {
         this.repo = repo;
     }
 
-    /**
-     * Retrieve all submitted entries for a given week‐close date.
-     */
+
     public List<SubmittedEntryEntity> findByWeek(LocalDate weekCloseDate) {
         return repo.findByWeekCloseDate(weekCloseDate);
     }
     public List<SubmittedEntryEntity> fetchAll() {
         return repo.findAllByOrderByWeekCloseDateDesc();
     }
-    /**
-     * Archive the current list of defaults as submitted entries for that Friday.
-     * Deletes any previous archive for the same weekCloseDate first.
-     */
+
     @Transactional
     public void archiveDefaults(LocalDate weekCloseDate, List<DefaultHours> defaults) {
-        // Remove any existing entries for this Friday
+
         repo.findByWeekCloseDate(weekCloseDate)
                 .forEach(existing -> repo.delete(existing));
 

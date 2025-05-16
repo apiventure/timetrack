@@ -18,7 +18,7 @@ public class DefaultHours {
     private int thu;
     private int fri;
 
-    // constructors, getters, setters
+
 
     public DefaultHours() {}
 
@@ -31,5 +31,5 @@ public class DefaultHours {
         this.fri = fri;
     }
 
-    // getters & setters omitted for brevity
+
 }

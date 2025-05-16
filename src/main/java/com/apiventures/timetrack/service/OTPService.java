@@ -19,9 +19,11 @@ public class OTPService {
     private final Map<String, String> otpStore = new ConcurrentHashMap<>();
 
     private final Set<String> allowedEmails = Set.of(
-            "nalluriedison2@gmail.com",
-            "user2@example.com",
-            "user3@company.com"
+            "edison.nalluri@marriott.com",
+            "himaja.velpula@marriott.com",
+            "somasekhar.patil@marriott.com",
+            "sharon.thomas@marriott.com",
+            "melanie.sandukas@marriott.com"
     );
 
     public boolean generateAndSendOtp(String email) {
